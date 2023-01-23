@@ -38,13 +38,14 @@ async function getScreenshotMobile(url, type, quality, fullPage) {
     browserWSEndpoint: config.browserWSEndpoint,
   });
   const page = await browser.newPage();
+  const height = await page.evaluate(() => document.documentElement.offsetHeight);
 
   await page.emulate({
     userAgent:
       'Mozilla/5.0 (Linux Android 5.0 SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Mobile Safari/537.36 Statically-Screenshot-Mobile/1.0 (+https://statically.io/screenshot/)',
     viewport: {
-      width: 360,
-      height: 640,
+      width: 600,
+      height: height,
       deviceScaleFactor: 1,
       isMobile: true,
       hasTouch: true,
@@ -52,7 +53,14 @@ async function getScreenshotMobile(url, type, quality, fullPage) {
     },
   });
 
-  await page.goto(url /*{ waitUntil: 'networkidle0' }*/);
+  await page.goto(url);
+  await page.waitForFunction("renderingCompleted === true");
+
+  await page.waitForTimeout(2000);
+
+  // await page.waitForNavigation({
+  //   waitUntil: 'networkidle0',
+  // });
   await page.addStyleTag({ content: disableTransitionDelayCSS });
 
   console.log('HTTP ' + url);
